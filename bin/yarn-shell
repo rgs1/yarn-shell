@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import argparse
+import os
+import sys
+
+if os.getenv('FROM_SOURCE') is not None:
+    sys.path.insert(0, '..')
+    sys.path.insert(0, '.')
+
+
+from yarn_shell import __version__
+from yarn_shell.shell import Shell
+from yarn_shell.yarn_proxy import YarnProxy
+
+
+def get_params():
+    """ get the cmdline params """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('rm-endpoint',
+                        type=str,
+                        default='',
+                        help='The Resource Manager')
+    return parser.parse_args()
+
+
+def main():
+    params = get_params()
+    proxy = YarnProxy(getattr(params, 'rm-endpoint'))
+    shell = Shell(proxy)
+
+    intro = 'Welcome to yarn-shell (%s)' % (__version__)
+    first = True
+    while True:
+        wants_exit = False
+
+        try:
+            shell.run(intro if first else None)
+        except KeyboardInterrupt:
+            wants_exit = True
+
+        if wants_exit:
+            try:
+                done = raw_input('\nExit? (y|n) ')
+                if done == "y":
+                    break
+            except EOFError:
+                pass
+
+        first = False
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
