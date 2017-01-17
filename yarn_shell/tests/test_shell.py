@@ -9,6 +9,8 @@ try:
 except ImportError:
     from io import StringIO
 
+from .util import session
+
 from yarn_shell.shell import Shell
 from yarn_shell.yarn_proxy import YarnProxy
 
@@ -24,26 +26,29 @@ class ProxyTestCase(unittest.TestCase):
         pass
 
     def test_info(self):
-        class Session(object):
-            """ mock requests Session """
-            def get(self, *args, **kwargs):
-                class Response(object):
-                    @property
-                    def status_code(self):
-                        return 200
-
-                    def json(self):
-                        return {
-                            'clusterInfo': {
-                                'foo': 'bar'
-                            }
-                        }
-
-                return Response()
+        resp = {
+            'clusterInfo': {
+                'foo': 'bar'
+            }
+        }
 
         output = StringIO()
-        proxy = YarnProxy('testrm', session=Session())
+        proxy = YarnProxy('testrm', session=session(resp))
         shell = Shell(proxy, output=output, setup_readline=False)
         shell.onecmd('info')
 
         self.assertEqual(output.getvalue(), 'foo = bar\n')
+
+    def test_metrics(self):
+        resp = {
+            'clusterMetrics': {
+                'containersAllocated': 20
+            }
+        }
+
+        output = StringIO()
+        proxy = YarnProxy('testrm', session=session(resp))
+        shell = Shell(proxy, output=output, setup_readline=False)
+        shell.onecmd('metrics')
+
+        self.assertEqual(output.getvalue(), 'containersAllocated = 20\n')
