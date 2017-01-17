@@ -23,11 +23,15 @@ class YarnProxy(object):
             self._scheme,
             self.rm_endpoint,
             path)
-        return self._session.get(url, headers=HEADERS)
+        resp = self._session.get(url, headers=HEADERS)
+        if resp.status_code != 200:
+            return {}
+        return resp.json()
 
     def cluster_info(self):
         """ get basic info about the backing YARN cluster """
-        resp = self._fetch('/cluster/info')
-        if resp.status_code != 200:
-            return {}
-        return resp.json()['clusterInfo']
+        return self._fetch('/cluster/info').get('clusterInfo', {})
+
+    def cluster_metrics(self):
+        """ get metrics about the backing YARN cluster """
+        return self._fetch('/cluster/metrics').get('clusterMetrics', {})

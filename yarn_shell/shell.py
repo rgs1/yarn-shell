@@ -75,7 +75,28 @@ class Shell(xcmd.XCmd):
        ...
 
         """
-        info = self._proxy.cluster_info()
-        keys = sorted(info.keys())
+        self._show_sorted_dict(self._proxy.cluster_info())
+
+    @connected
+    def do_metrics(self, params):
+        """
+\x1b[1mNAME\x1b[0m
+        metrics - Get metrics about the connected YARN cluster
+
+\x1b[1mSYNOPSIS\x1b[0m
+        metrics
+
+\x1b[1mEXAMPLES\x1b[0m
+        > metrics
+        allocatedMB = 48649216
+        allocatedVirtualCores = 16003
+        appsCompleted = 131791
+       ...
+
+        """
+        self._show_sorted_dict(self._proxy.cluster_metrics())
+
+    def _show_sorted_dict(self, pdict):
+        keys = sorted(pdict.keys())
         for key in keys:
-            self.show_output("%s = %s", key, info[key])
+            self.show_output("%s = %s", key, pdict[key])
