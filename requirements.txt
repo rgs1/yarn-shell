@@ -1,2 +1,3 @@
 nose==1.3.7
+requests==2.12.4
 xcmd==0.0.2
